@@ -24,13 +24,21 @@ class PartnersDetailsrTest(TestCase):
  def test_filter_list_view(self):
   w = self.create_PartnersDetails()
   
-  resp = self.client.post('/filter/')
+  resp = self.client.post('/filter/',json.dumps("chamrajpet,Bengaluru"),content_type='application/json',
+                              HTTP_X_REQUESTED_WITH='XMLHttpRequest')
                 
 
   self.assertEqual(resp.status_code, 200)
   self.assertJSONEqual(
             str(resp.content),
-            {}
-        )
+            dict = {
+          "qwerty": [
+          {
+            "lat": "44.933493",
+            "long": "7.540749",
+          }
+          ]
+        }
+      )
   
   
