@@ -71,10 +71,12 @@
     padding: 0 11px 0 13px;
     text-overflow: ellipsis;
     width: 400px;
+    border: 2px solid blue;
   }
 
   #pac-input:focus {
     border-color: #4d90fe;
+
   }
 
   #title {
@@ -87,10 +89,34 @@
   #target {
     width: 345px;
   }
+  //newly added
+  #controls {
+    position: absolute;
+    left: 300px;
+    width: 140px;
+    top: 0px;
+    z-index: 5;
+    background-color: #fff;
+    padding: 0 11px 0 13px;
+  }
+  #country {
+    width: 100%;
+  }
+  #listing {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    overflow: auto;
+    left: 1100px;
+    top: 0px;
+    cursor: pointer;
+    overflow-x: hidden;
+  }
   </style>
 </head>
 <body>
   <input id="pac-input" class="controls" type="text" placeholder="Type Places Here">
+      
   <div id="map"></div>
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script>
@@ -103,7 +129,7 @@
   // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
   var map;
   var markers = [];
-
+  
   function initMap() {
      map = new google.maps.Map(document.getElementById('map'), {
      zoom: 10,
@@ -131,7 +157,7 @@
         clearMarkers();
         markers = [];
       }
-  
+
 
 
   function setMarkers(map,msg) {
@@ -143,13 +169,13 @@
     // Origins, anchor positions and coordinates of the marker increase in the X
     // direction to the right and in the Y direction down.
     var image = {
-      url: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+      url: 'https://cdn4.iconfinder.com/data/icons/business-tools/512/workshop_map_marker-32.png',
       // This marker is 20 pixels wide by 32 pixels high.
-      size: new google.maps.Size(20, 32),
+      //size: new google.maps.Size(20, 32),(edited by me)
       // The origin for this image is (0, 0).
-      origin: new google.maps.Point(0, 0),
+      //origin: new google.maps.Point(0, 0),(edited by me)
       // The anchor for this image is the base of the flagpole at (0, 32).
-      anchor: new google.maps.Point(0, 32)
+      //anchor: new google.maps.Point(0, 32)
     };
     // Shapes define the clickable region of the icon. The type defines an HTML
     // <area> element 'poly' which traces out a polygon as a series of X,Y points.
@@ -159,20 +185,28 @@
       type: 'poly'
     };
 	deleteMarkers();
+  var infowindow = new google.maps.InfoWindow();
 	$.each(msg, function(key, value){
       $.each(value, function(key, value){
-        marker = new google.maps.Marker({     
-         position: {lat: parseFloat(value['lat']), lng: parseFloat(value['long'])},
+        marker = new google.maps.Marker({
+         position: {lat: parseFloat(value[5]), lng: parseFloat(value[6])},
          map: map,
          icon: image,
          shape: shape,
-       
-        });   
-        markers.push(marker);		
+        });
+        var content = "<b> Name: </b>"+ value[0] + "<br>" +"<b>Address: </b>"+ value[1]+ "<br>"+ "<b>Status: </b>" + value[7];
+        google.maps.event.addListener(marker,'click', (function(marker,content,infowindow){
+          return function() {
+            infowindow.setContent(content);
+            infowindow.setOptions({maxWidth: 200});
+            infowindow.open(map,marker);
+           };
+         })(marker,content,infowindow));
+        markers.push(marker);
       });
     });
-	
-	
+
+
   }
 
 
@@ -197,7 +231,7 @@
       if (places.length == 0) {
         return;
       }
-      
+
       var request_data = document.getElementById('pac-input').value;
       $.ajax({
         type: 'POST',
@@ -205,9 +239,9 @@
         data : { request_data: request_data},
         success : function(msg) {
           console.log("success");
-		  
+          console.log(msg);
           setMarkers(map,msg);
-              
+
         },
         error : function(data){
           console.log("Failure");
